@@ -1,0 +1,85 @@
+
+
+
+/* Import font Roboto nếu bạn cần */
+@import "@fontsource/roboto/300.css";
+@import "@fontsource/roboto/400.css";
+@import "@fontsource/roboto/500.css";
+@import "@fontsource/roboto/700.css";
+
+/* Import Lexend nếu bạn cài qua npm */
+@import "tailwindcss";
+
+
+/* Reset margin, padding và box-sizing */
+* {
+  /* margin: 0 !important;
+  padding: 0 !important; */
+  box-sizing: border-box;
+}
+
+body, main {
+
+  font-family: 'Lexend', sans-serif;
+  overflow: visible !important;
+}
+
+li a, p, a {
+  font-family: 'Lexend', sans-serif;
+}
+
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+
+.custom-prev,
+.custom-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px; /* Độ lớn của nút */
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.8); /* Nền trắng nhẹ */
+  border: 1px solid #ccc; /* Viền mỏng */
+  border-radius: 50%; /* Bo tròn */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  z-index: 10;
+}
+
+.custom-prev {
+  left: -20px; /* Đẩy ra ngoài một chút */
+}
+
+.custom-next {
+  right: -20px;
+}
+
+.custom-prev:hover,
+.custom-next:hover {
+  background-color: rgba(255, 255, 255, 1); /* Đậm màu hơn khi hover */
+  border-color: #999; /* Viền đậm hơn khi hover */
+}
+
+/* Custom icon */
+.custom-prev::after,
+.custom-next::after {
+  font-size: 18px;
+  color: #666;
+}
+
+.custom-prev::after {
+  content: "❮";
+}
+
+.custom-next::after {
+  content: "❯";
+}
