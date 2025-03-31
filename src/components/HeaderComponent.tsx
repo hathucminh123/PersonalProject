@@ -121,6 +121,14 @@ interface props {
 const HeaderComponent: React.FC<props> = ({ open, setOpen, data }) => {
   const location = useLocation();
 
+  const token = localStorage.getItem("token");
+
+  const handleLogout = () => {
+    localStorage.clear();
+
+    window.location.href = "/login";
+  };
+
   const handleSavePath = () => {
     localStorage.setItem("redirectPath", location.pathname);
   };
@@ -137,11 +145,11 @@ const HeaderComponent: React.FC<props> = ({ open, setOpen, data }) => {
   );
   const discountTotal = originalTotalPrice - finalTotalPrice;
 
-const navigate =useNavigate()
+  const navigate = useNavigate();
 
-  const handleNavigate = () => {  
-    navigate("/checkout")
-    setOpen(false)
+  const handleNavigate = () => {
+    navigate("/checkout");
+    setOpen(false);
   };
 
   return (
@@ -165,12 +173,21 @@ const navigate =useNavigate()
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">SkinCare</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    SkinCare
+                  </h3>
                   <p className="text-sm text-gray-500">Chăm sóc da</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                {["Dưỡng da", "Chống nắng", "Tẩy tế bào chết", "Mặt nạ", "Mắt", "Môi"].map((item) => (
+                {[
+                  "Dưỡng da",
+                  "Chống nắng",
+                  "Tẩy tế bào chết",
+                  "Mặt nạ",
+                  "Mắt",
+                  "Môi",
+                ].map((item) => (
                   <a
                     key={item}
                     href="#"
@@ -182,16 +199,21 @@ const navigate =useNavigate()
               </div>
             </div>
           </MenuItem>
-          {["Blog làm đẹp", "Từ điển về da", "Testimonial", "Deal Hời"].map((item) => (
-            <MenuItem key={item} label={item} />
-          ))}
+          {["Blog làm đẹp", "Từ điển về da", "Testimonial", "Deal Hời"].map(
+            (item) => (
+              <MenuItem key={item} label={item} />
+            )
+          )}
         </ul>
       </nav>
 
       <div className="flex items-center space-x-4">
         <div className="relative">
           <div onClick={togglePopup}>
-            <IconButton icon={<MailOutlineIcon className="text-gray-700 text-[24px]" />} badge={data.length} />
+            <IconButton
+              icon={<MailOutlineIcon className="text-gray-700 text-[24px]" />}
+              badge={data.length}
+            />
           </div>
 
           <div
@@ -200,7 +222,11 @@ const navigate =useNavigate()
               rounded-[.9375rem] bg-white pt-[.5rem] p-5 w-max max-w-[32rem] h-max 
               transition-all duration-300 ease-in-out border border-[#e5e7eb] 
               text-base box-border shadow-lg
-              ${open ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-2"}
+              ${
+                open
+                  ? "opacity-100 visible translate-y-0"
+                  : "opacity-0 invisible translate-y-2"
+              }
             `}
           >
             <div className="pb-2 flex justify-end">
@@ -211,7 +237,9 @@ const navigate =useNavigate()
             <div className="min-h-[44px]">
               <ul className="max-h-[30vh] pr-[.7rem] overflow-x-hidden overflow-y-auto m-0 p-0 list-none">
                 <p className="mb-2 border border-dashed border-red-700 rounded p-2">
-                  Đơn hàng từ 300k bất kỳ tặng 1 Mini Size Ceuticoz. Đơn từ 500k tặng 1 Body Silicone Bath Brush 177k. Đơn từ 1 triệu tặng 1 áo thun BST VN Coolmate trị giá 350k
+                  Đơn hàng từ 300k bất kỳ tặng 1 Mini Size Ceuticoz. Đơn từ 500k
+                  tặng 1 Body Silicone Bath Brush 177k. Đơn từ 1 triệu tặng 1 áo
+                  thun BST VN Coolmate trị giá 350k
                 </p>
 
                 {data.length === 0 ? (
@@ -220,12 +248,16 @@ const navigate =useNavigate()
                   </>
                 ) : (
                   data.map((item) => {
-                    const originalTotal = item.quantity * item.product.originalPrice;
+                    const originalTotal =
+                      item.quantity * item.product.originalPrice;
                     const finalTotal = item.quantity * item.product.finalPrice;
                     const discount = originalTotal - finalTotal;
 
                     return (
-                      <li key={item.product.id} className="gap-[1.25rem] flex items-center box-border">
+                      <li
+                        key={item.product.id}
+                        className="gap-[1.25rem] flex items-center box-border"
+                      >
                         <Link
                           to={"#"}
                           className="flex items-center justify-center border border-[rgb(215,82,82)] rounded-full w-[20px] h-[20px] text-[rgb(215,82,82)] transition-all duration-200 ease-in-out"
@@ -233,7 +265,10 @@ const navigate =useNavigate()
                           <CloseIcon />
                         </Link>
                         <div className="flex justify-center items-center border border-[#860315] rounded-[5px] bg-white w-[75px] h-[75px]">
-                          <Link to={""} className="flex justify-center items-center w-full h-full transition-all duration-200 ease-in-out">
+                          <Link
+                            to={""}
+                            className="flex justify-center items-center w-full h-full transition-all duration-200 ease-in-out"
+                          >
                             <img
                               src={item.product.imageUrl}
                               alt={item.product.name}
@@ -243,7 +278,10 @@ const navigate =useNavigate()
                         </div>
                         <div className="flex-1">
                           <p className="line-clamp-2 overflow-hidden text-[rgb(68,68,68)] font-semibold text-[14px] leading-[1.5]">
-                            <Link to="" className="transition-all duration-200 ease-in-out">
+                            <Link
+                              to=""
+                              className="transition-all duration-200 ease-in-out"
+                            >
                               {item.product.name}
                             </Link>
                           </p>
@@ -276,19 +314,25 @@ const navigate =useNavigate()
               {data.length > 0 && (
                 <div className="pt-[.9375rem] mt-[15px] border-t border-dashed border-[rgb(130,130,130)]">
                   <p className="text-[clamp(14px,.875rem,.875rem)] text-right m-0">
-                    <span className="text-[rgb(68,68,68)] font-semibold">Tổng cộng: </span>
+                    <span className="text-[rgb(68,68,68)] font-semibold">
+                      Tổng cộng:{" "}
+                    </span>
                     <span className="inline-block min-w-[120px] text-[rgb(68,68,68)] font-semibold">
                       {originalTotalPrice.toLocaleString()} ₫
                     </span>
                   </p>
                   <p className="text-[clamp(14px,.875rem,.875rem)] text-right m-0">
-                    <span className="text-[rgb(68,68,68)] font-semibold">Giảm giá: </span>
+                    <span className="text-[rgb(68,68,68)] font-semibold">
+                      Giảm giá:{" "}
+                    </span>
                     <span className="inline-block min-w-[120px] text-[rgb(68,68,68)] font-semibold">
                       -{discountTotal.toLocaleString()} ₫
                     </span>
                   </p>
                   <p className="text-[clamp(14px,.875rem,.875rem)] text-right m-0">
-                    <span className="text-[rgb(68,68,68)] font-semibold">Tổng giá trị: </span>
+                    <span className="text-[rgb(68,68,68)] font-semibold">
+                      Tổng giá trị:{" "}
+                    </span>
                     <span className="inline-block min-w-[120px] text-[rgb(134,3,21)] font-semibold">
                       {finalTotalPrice.toLocaleString()} ₫
                     </span>
@@ -315,24 +359,53 @@ const navigate =useNavigate()
         </div>
         <SearchBar />
         <div className="group relative">
-          <IconButton icon={<AccountCircleIcon className="text-gray-700 text-[24px]" />} />
-          <div className="absolute top-full right-0 w-48 bg-white shadow-lg rounded-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 ease-in-out z-50 transform translate-y-2">
-            <div className="flex flex-col">
-              <Link
-                to={"/login"}
-                className="hover:bg-pink-50 transition-colors duration-300 py-4 block cursor-pointer rounded-xl pl-1"
-                onClick={handleSavePath}
-              >
-                Đăng nhập
-              </Link>
-              <Link
-                to={"/register"}
-                className="hover:bg-pink-50 transition-colors duration-300 py-4 block cursor-pointer rounded-xl pl-1"
-              >
-                Đăng ký
-              </Link>
+          <IconButton
+            icon={<AccountCircleIcon className="text-gray-700 text-[24px]" />}
+          />
+          {token ? (
+            <div className="absolute top-full right-0 w-48 bg-white shadow-lg rounded-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 ease-in-out z-50 transform translate-y-2">
+              <div className="flex flex-col">
+                <Link
+                  to={"/profile"}
+                  className="hover:bg-pink-50 transition-colors duration-300 py-4 block cursor-pointer rounded-xl pl-1"
+                >
+                  Tài khoản của tôi
+                </Link>
+                <Link
+                  to={"/order-history"}
+                  className="hover:bg-pink-50 transition-colors duration-300 py-4 block cursor-pointer rounded-xl pl-1"
+                >
+                  Đơn hàng của tôi
+                </Link>
+                <Link
+                  to={"#/"}
+                  onClick={handleLogout}
+                  onMouseEnter={handleSavePath}
+                  className="hover:bg-pink-50 transition-colors duration-300 py-4 block cursor-pointer rounded-xl pl-1"
+                >
+                  Đăng xuất
+                </Link>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="absolute top-full right-0 w-48 bg-white shadow-lg rounded-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 ease-in-out z-50 transform translate-y-2">
+              <div className="flex flex-col">
+                <Link
+                  to={"/login"}
+                  className="hover:bg-pink-50 transition-colors duration-300 py-4 block cursor-pointer rounded-xl pl-1"
+                  onClick={handleSavePath}
+                >
+                  Đăng nhập
+                </Link>
+                <Link
+                  to={"/register"}
+                  className="hover:bg-pink-50 transition-colors duration-300 py-4 block cursor-pointer rounded-xl pl-1"
+                >
+                  Đăng ký
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

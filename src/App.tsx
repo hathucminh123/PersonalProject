@@ -16,10 +16,10 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { CompareProduct } from "./pages/CompareProduct";
 import { queryClient } from "./Services/MainService";
+import { UserProfile } from "./pages/UserProfile";
+import { UserInfo } from "./components/UserInfo";
 
 const App: React.FC = () => {
-
-
   const router = createBrowserRouter([
     {
       path: "/",
@@ -51,8 +51,18 @@ const App: React.FC = () => {
         },
         {
           path: "/CompareProduct",
-          element:<CompareProduct/>
-        }
+          element: <CompareProduct />,
+        },
+        {
+          path: "User",
+          element: <UserProfile />,
+          children:[
+            {
+              index:true,
+              element:<UserInfo/>
+            }
+          ]
+        },
       ],
     },
   ]);
