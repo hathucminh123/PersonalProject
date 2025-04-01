@@ -4,16 +4,11 @@ import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import { NavLink } from "react-router-dom";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import { InfoTitle } from "./InfoTitle";
 export const UserInfo: React.FC = () => {
   return (
     <section>
-      <div className="flex justify-between gap-6 lg:flex-row lg:items-end lg:mb-[2.75rem]">
-        <div className="flex items-center gap-[16px] box-border">
-          <h1 className="text-[rgb(68,68,68)] font-normal leading-[1.3]  lg:text-[clamp(14px,2.375rem,2.375rem)]">
-            Tổng quan tài khoản
-          </h1>
-        </div>
-      </div>
+    <InfoTitle title="Tổng quan tài khoản"/>
       <div>
         <div>
           <div className="mb-[1.5rem] bg-white shadow lg:rounded-[.9375rem] lg:pt-7 lg:pb-7 lg:px-6">

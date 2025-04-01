@@ -42,17 +42,17 @@ export const UserProfile: React.FC = () => {
                 <ul className="m-0 p-0 list-none">
                   {[
                     {
-                      to: "",
+                      to: "/User",
                       label: "Tổng quan tài khoản",
                       icon: <NoteAddIcon />,
                     },
                     {
-                      to: "/info",
+                      to: "info",
                       label: "Thông tin cá nhân",
                       icon: <PersonIcon />,
                     },
                     {
-                      to: "/address",
+                      to: "address",
                       label: "Sổ địa chỉ",
                       icon: <LocationOnIcon />,
                     },
@@ -86,6 +86,7 @@ export const UserProfile: React.FC = () => {
                     <li key={to}>
                       <NavLink
                         to={to}
+                        end
                         className={({ isActive }) =>
                           `${
                             isActive ? "text-[rgb(134,3,21)]" : "text-black"
