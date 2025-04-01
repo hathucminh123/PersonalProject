@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 export const Address: React.FC = () => {
   return (
     <section>
-      <InfoTitle title="Sổ địa chỉ" />
+      <InfoTitle title="Sổ địa chỉ" appear={true} />
       <div>
         <div className="mb-[1.5rem] bg-white shadow lg:rounded-[.9375rem] lg:pt-7 lg:pb-7 lg:px-6">
           <h2 className="text-black font-medium leading-[1.7] lg:mb-5 lg:text-[clamp(14px,1.125rem,1.125rem)]">

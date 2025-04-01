@@ -1,5 +1,5 @@
 type SelectBoxProps = {
-    options: number[];
+    options: number[] |string [];
     placeholder: string;
     value: string;
     onChange: (val: string) => void;

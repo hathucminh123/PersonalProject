@@ -20,6 +20,10 @@ import { UserProfile } from "./pages/UserProfile";
 import { UserInfo } from "./components/UserInfo";
 import { PersonalInfo } from "./components/PersonalInfo";
 import { Address } from "./components/Address";
+import { CreateAddress } from "./components/CreateAddress";
+import { UserOrders } from "./components/UserOrders";
+import { FavoriteProducts } from "./components/FavoriteProducts";
+import { ChangePassword } from "./components/ChangePassword";
 
 const App: React.FC = () => {
   const router = createBrowserRouter([
@@ -71,6 +75,22 @@ const App: React.FC = () => {
               path: "address",
               element: <Address />,
             },
+            {
+              path: "address/create",
+              element: <CreateAddress />,
+            },
+            {
+              path: "orders",
+              element: <UserOrders />,
+            },
+            {
+              path: "favorites",
+              element: <FavoriteProducts />,
+            },
+            {
+              path:"change-password",
+              element:<ChangePassword/>
+            }
           ],
         },
       ],
