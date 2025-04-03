@@ -1,19 +1,67 @@
 import React, { useState } from "react";
 import { InfoTitle } from "./InfoTitle";
 import { SelectBox } from "./SelectBox ";
-
+import { queryClient } from "../Services/MainService";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { CreateAddressdata } from "../Services/AddressService/CreateAddress";
+import { GetUserByIdService } from "../Services/UserService/GetUserById";
 
 const provinces = ["Hà Nội", "Hồ Chí Minh", "Đà Nẵng"];
 const districts = ["Quận 1", "Quận 2", "Quận 3"];
 const wards = ["Phường 1", "Phường 2", "Phường 3"];
 
 export const CreateAddress: React.FC = () => {
+  const navigate = useNavigate();
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
   const [ward, setWard] = useState("");
   const [address, setAddress] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+
+  const userId = localStorage.getItem("userId");
+
+const {data:UserData}=useQuery({
+ queryKey:["UserData",userId],
+ queryFn:({signal})=>GetUserByIdService({id: userId , signal:signal}),
+enabled:!!userId
+
+})
+
+const User  = UserData?.Userdata
+
+
+  const { mutate } = useMutation({
+    mutationFn: CreateAddressdata,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["Address-userId", userId],
+
+        refetchType: "active",
+      });
+
+      navigate("/User/address")
+    },
+    onError: (error) => {
+      console.log("Delete Address failed", error);
+    },
+  });
+
+  const handleAddAdress =()=>{
+    mutate({
+      data:{
+        userId:userId,
+        fullName:fullName,
+        phone:phone,
+        province:province,
+        district:district,
+        ward:"",
+        streetAddress:address,
+        email:User.email
+      }
+    })
+  }
 
   return (
     <section>
@@ -116,9 +164,10 @@ export const CreateAddress: React.FC = () => {
               </div>
 
               {/* Nút lưu */}
-              <div className="pr-7 pl-7 w-full mt-7.5 text-sm">
+              <div className="pr-7 pl-7 w-full mt-7.5 text-sm"  >
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleAddAdress}
                   className="px-6 py-2 rounded-full bg-gray-800 text-white"
                 >
                   Lưu địa chỉ

@@ -7,6 +7,7 @@ export interface OrderDetail {
   quantity: number;
   price: number;
   totalPrice: number;
+  imageUrl: string;
 }
 export interface ShippingAddress {
   id: string;
@@ -37,13 +38,13 @@ export interface Order {
 
 interface signal {
   signal: AbortSignal;
-  userId: string;
+  userId: string|null;
 }
 
-export const GetOrderService = async ({
+export const GetOrderServiceByUserId = async ({
   signal,
   userId,
-}: signal): Promise<{ Order: Order }> => {
+}: signal): Promise<{ Order: Order[] }> => {
   try {
     const response = await httpClient.get({
       url: ` ${apiLinks.Orders.GetOrderbyUserId}/${userId}`,
@@ -52,7 +53,7 @@ export const GetOrderService = async ({
 
     const order = response.data;
     return {
-      Order: order as Order,
+      Order: order as Order[],
     };
   } catch (error: unknown) {
     if (error instanceof Error) {

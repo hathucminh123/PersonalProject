@@ -29,13 +29,31 @@ export const apiLinks = {
     GetAllCart: `${baseUrl}/Cart`,
     GetCartbyId: `${baseUrl}/Cart`,
     CreateCart: `${baseUrl}/Cart/add`,
-UpdateCart:`${baseUrl}/Cart`,
+    UpdateCart: `${baseUrl}/Cart`,
     DeleteCart: `${baseUrl}/Cart`,
     DeleteAllCart: `${baseUrl}/Cart`,
   },
-  Orders:{
-    GetOrder:`${baseUrl}/Orders`,
-    CreateOrder:`${baseUrl}/Orders`,
-    GetOrderbyUserId:`${baseUrl}/Orders`,
+  Orders: {
+    GetOrder: `${baseUrl}/Orders`,
+    CreateOrder: `${baseUrl}/Orders/`,
+    GetOrderbyUserId: `${baseUrl}/Orders`,
+  },
+
+  Address: {
+    POST: `${baseUrl}/Address`,
+    PUT: `${baseUrl}/Address`,
+    DELETEByUser: `${baseUrl}/Address`,
+    GETById: `${baseUrl}/Address`,
+    DELETEByAdmin: `${baseUrl}/Address/Admin`,
+  },
+
+  User: {
+    GETUserById: `${baseUrl}/Users`,
+    PUT: `${baseUrl}/Users`,
+  },
+  Payment: {
+    PostPayment: `${baseUrl}/Payment/vnpay/create`,
+    
+
   }
 };

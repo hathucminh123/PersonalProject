@@ -340,7 +340,7 @@ const HeaderComponent: React.FC<props> = ({ open, setOpen, data }) => {
                   <div className="flex-row justify-center pt-[.9375rem] items-center mt-[15px] border-t border-dashed border-[rgb(130,130,130)] flex flex-wrap gap-[.625rem]">
                     <Link
                       onClick={handleNavigate}
-                      to={""}
+                      to={"#"}
                       className="border border-[rgb(68,68,68)] bg-[rgb(68,68,68)] text-white rounded-full flex items-center gap-2 justify-center px-[1.5rem] h-[2.75rem] text-[1rem] transition-all duration-200 ease-in-out font-medium w-max text-center"
                     >
                       <span>Xem giỏ hàng và thanh toán</span>
@@ -366,13 +366,13 @@ const HeaderComponent: React.FC<props> = ({ open, setOpen, data }) => {
             <div className="absolute top-full right-0 w-48 bg-white shadow-lg rounded-lg p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 ease-in-out z-50 transform translate-y-2">
               <div className="flex flex-col">
                 <Link
-                  to={"/profile"}
+                  to={"/User"}
                   className="hover:bg-pink-50 transition-colors duration-300 py-4 block cursor-pointer rounded-xl pl-1"
                 >
                   Tài khoản của tôi
                 </Link>
                 <Link
-                  to={"/order-history"}
+                  to={"/User/orders"}
                   className="hover:bg-pink-50 transition-colors duration-300 py-4 block cursor-pointer rounded-xl pl-1"
                 >
                   Đơn hàng của tôi

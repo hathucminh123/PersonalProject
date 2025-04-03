@@ -60,7 +60,7 @@ export const GetProductByIdService = async ({
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error("Login request failed:", error.message);
+      console.error("Get Product failed:", error.message);
     } else {
       console.error("Unexpected error", error); 
     }

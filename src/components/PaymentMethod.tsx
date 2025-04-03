@@ -46,14 +46,14 @@ const PaymentMethods:React.FC<PaymentMethodProps> = ({paymentMethod,setPaymentMe
         <input
           type="radio"
           name="paymentMethod"
-          value={0}
-          checked={paymentMethod === 0}
-          onChange={() => handleSelect(0)}
+          value={2}
+          checked={paymentMethod === 2}
+          onChange={() => handleSelect(2)}
           className="hidden"
         />
         <span
           className={`flex flex-col justify-center items-center gap-5 rounded-md py-3 px-5 ${
-            paymentMethod === 0 ? "bg-[#444444] text-white" : "bg-[#CCCCCC]"
+            paymentMethod === 2 ? "bg-[#444444] text-white" : "bg-[#CCCCCC]"
           }`}
         >
           <span className="flex justify-center items-center w-[2.5rem] h-[2.5rem]">

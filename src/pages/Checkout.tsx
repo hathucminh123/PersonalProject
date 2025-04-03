@@ -8,10 +8,16 @@ import { UpdateCart } from "../Services/CartService/UpdateCartService";
 import { DeleteProductCart } from "../Services/CartService/DeleteProductCart";
 import PaymentMethods from "../components/PaymentMethod";
 import { CreateOrders } from "../Services/OrderService/CreateOrders";
+import { GetAdressByUserId } from "../Services/AddressService/GetAdressByUserId";
+import { PaymentService } from "../Services/PaymentService/PaymentService";
 
 const Checkout: React.FC = () => {
   const userId = localStorage.getItem("userId") || "0";
   const [paymentMethod, setPaymentMethod] = useState<number | null>(null);
+
+  const [address, setAddress] = useState<string>("");
+  const [open, setOpen] = useState<boolean>(false);
+
   console.log("nguoi dung", userId);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -21,24 +27,22 @@ const Checkout: React.FC = () => {
     ward: "",
     streetAddress: "",
     email: "",
-    isDefault: true
+    isDefault: true,
   });
   const [discountCode, setDiscountCode] = useState<string>("");
 
   console.log("co du lieu ", formData.province);
   console.log("co du lieu ", formData.district);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
-
- 
-
-
 
   const { data, refetch } = useQuery({
     queryKey: ["Cart", userId],
@@ -73,25 +77,24 @@ const Checkout: React.FC = () => {
       addCart({ data: { userId, productId, quantity } });
     }
   };
-  
 
   const { mutate: DeleteCart } = useMutation({
     mutationFn: DeleteProductCart,
     onSuccess: () => {
       refetch();
       queryClient.invalidateQueries({
-        queryKey: ["Cart"],
+        queryKey: ["Cart", userId],
         refetchType: "active",
       });
 
       console.log("delete product to cart success");
       alert("Xóa sản phẩm thành công");
+      // window.location.reload();
     },
     onError: (error) => {
       console.log("Add product to cart error", error);
     },
   });
-
 
   const handleDeleteProduct = (productId: string) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?")) {
@@ -99,20 +102,47 @@ const Checkout: React.FC = () => {
     }
   };
 
+  const { mutate: Payment } = useMutation({
+    mutationFn: PaymentService,
+    onSuccess: (data) => {
+      console.log("paymentcochua",data)
+      window.open(data.paymentUrl);
+    },
+    onError: (error) => {
+      console.log("Payment Failed", error);
+    },
+  });
+
   const { mutate: createOrders } = useMutation({
-    mutationFn: CreateOrders,
-    onSuccess: async () => {
+    mutationFn: CreateOrders, // gọi hàm tạo đơn hàng từ service
+
+    onSuccess: async (data) => {
       console.log("✅ Đặt hàng thành công");
-  
-      // Đợi một chút để đảm bảo backend đã xoá cart
+      console.log("okchuaor", data.id);
+      // Lấy orderId từ kết quả trả về
+      const orderId = data?.id; // bạn chọn theo đúng key backend trả về
+
+      // Nếu chọn phương thức thanh toán là VNPAY (giả sử = 2)
+      if (paymentMethod === 2 && orderId) {
+        Payment({
+          data: {
+            orderType: "VnPay",
+            orderDescription: "Thanh toán qua cổng VNPAY",
+            name: "VnPay",
+            orderId: orderId,
+          },
+        });
+      }
+
+      // Đợi một chút để đảm bảo backend xử lý xoá giỏ hàng xong
       setTimeout(() => {
         queryClient.invalidateQueries({
           queryKey: ["Cart"],
-          refetchType: "all"
+          refetchType: "all",
         });
-      }, 300); // hoặc 500ms nếu vẫn fail
-  
-      // Reset UI nếu cần
+      }, 300);
+
+      // Reset UI sau khi đặt hàng
       setFormData({
         fullName: "",
         phone: "",
@@ -121,34 +151,111 @@ const Checkout: React.FC = () => {
         ward: "",
         streetAddress: "",
         email: "",
-        isDefault: true
+        isDefault: true,
       });
+
       setPaymentMethod(null);
       setDiscountCode("");
+
       alert("Đặt hàng thành công");
+
+      // Reload trang (tuỳ logic app của bạn)
       window.location.reload();
     },
+
     onError: (error) => {
       console.log("❌ Lỗi khi đặt hàng", error);
-      alert("Đặt hàng thất bại!");
-    }
+      alert("Đặt hàng thất bại! Vui lòng thử lại.");
+    },
   });
-  
-  
-    const  handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      console.log("formData", formData);
-      createOrders({data:{
-        userId:userId,
-        shippingAddressInput:formData,
-        paymentMethod:paymentMethod,
-        discountCode:discountCode,
-  
-      }})
-      await refetch();
-    };
-  
-  
+
+  console.log("Payment", paymentMethod);
+  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   console.log("formData", formData);
+
+  //   if (address === "open") {
+  //     createOrders({
+  //       data: {
+  //         userId: userId,
+  //         shippingAddressInput: formData,
+  //         paymentMethod: paymentMethod,
+  //         discountCode: discountCode,
+  //       },
+  //     });
+  //     return;
+  //   }
+
+  //   createOrders({
+  //     data: {
+  //       userId: userId,
+  //       shippingAddressId:address,
+  //       // shippingAddressInput: formData,
+  //       paymentMethod: paymentMethod,
+  //       discountCode: discountCode,
+  //     },
+  //   });
+  //   await refetch();
+  // };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Validate phương thức thanh toán
+    if (!paymentMethod) {
+      alert("Vui lòng chọn phương thức thanh toán.");
+      return;
+    }
+
+    // Nếu người dùng chọn "Thêm địa chỉ mới"
+    if (address === "open") {
+      const { fullName, phone, province, district, streetAddress, email } =
+        formData;
+
+      // Validate form mới
+      if (
+        !fullName ||
+        !phone ||
+        !province ||
+        !district ||
+        !streetAddress ||
+        !email
+      ) {
+        alert("Vui lòng điền đầy đủ thông tin địa chỉ giao hàng.");
+        return;
+      }
+
+      // Gửi đơn với địa chỉ mới
+      createOrders({
+        data: {
+          userId: userId,
+          shippingAddressInput: formData,
+          paymentMethod: paymentMethod,
+          discountCode: discountCode,
+        },
+      });
+
+      return;
+    }
+
+    // Nếu người dùng chọn địa chỉ đã lưu
+    if (!address) {
+      alert("Vui lòng chọn địa chỉ giao hàng.");
+      return;
+    }
+
+    // Gửi đơn với địa chỉ có sẵn
+    createOrders({
+      data: {
+        userId: userId,
+        shippingAddressId: address,
+        paymentMethod: paymentMethod,
+        discountCode: discountCode,
+      },
+    });
+
+    await refetch();
+  };
 
   const tempTotal = cartData.reduce(
     (total, item) => total + item.product.originalPrice * item.quantity,
@@ -164,6 +271,24 @@ const Checkout: React.FC = () => {
 
   const finalTotal = tempTotal - discountTotal;
 
+  const { data: Address } = useQuery({
+    queryKey: ["Address-userId", userId],
+    queryFn: ({ signal }) => GetAdressByUserId({ id: userId, signal: signal }),
+    enabled: !!userId,
+  });
+
+  console.log("userdata", data);
+
+  const addressesData = Address?.Address;
+
+  const handleSelect = (value: string) => {
+    const newValue = value === address ? "" : value;
+    setAddress(newValue);
+    setOpen(newValue === "open");
+  };
+
+  console.log("adress", address);
+  console.log("open chua", open);
   return (
     <>
       {" "}
@@ -209,7 +334,7 @@ const Checkout: React.FC = () => {
                     <div className="mb-0 block text-[clamp(14px,1rem,1rem)]">
                       <div className="gap-[.625rem] flex flex-wrap text-[clamp(14px,1rem,1rem)]">
                         <Link
-                          to=""
+                          to="/"
                           className="flex items-center gap-2 transition-all duration-200 ease-in-out 
                px-4 h-9 font-medium text-xs 
                 border border-gray-700 bg-gray-700 text-white
@@ -571,8 +696,9 @@ const Checkout: React.FC = () => {
                                 type="text"
                                 name="discountCode"
                                 value={discountCode}
-                                onChange={(e) => setDiscountCode(e.target.value)}
-
+                                onChange={(e) =>
+                                  setDiscountCode(e.target.value)
+                                }
                                 className="pr-[7.5rem] h-[40px] font-medium relative border border-gray-500 rounded-md bg-transparent p-1.5 w-full  text-gray-700 text-base"
                                 placeholder="nhập mã giảm giá"
                               />
@@ -771,7 +897,10 @@ checked:bg-[#7b0013] checked:ring-2 checked:ring-white flex-shrink-0 inline-bloc
                             </span>
                           </label>
                         </div> */}
-                        <PaymentMethods paymentMethod={paymentMethod} setPaymentMethod={setPaymentMethod}/>
+                        <PaymentMethods
+                          paymentMethod={paymentMethod}
+                          setPaymentMethod={setPaymentMethod}
+                        />
                       </div>
                     </div>
                     <div className="mt-5 flex text-[#0A0A0A] font-normal text-sm md:text-base">
@@ -797,7 +926,10 @@ checked:bg-[#7b0013] checked:ring-2 checked:ring-white flex-shrink-0 inline-bloc
                       <div className="gap-[.625rem] flex flex-wrap justify-center ">
                         <button className="flex justify-center items-center rounded-[3px] bg-[#860315] py-[10px] px-[15px] text-white font-bold text-sm uppercase text-center cursor-pointer transition-all duration-200">
                           {"Thanh toán "}
-                          <span className="ml-1 capitalize"> {finalTotal.toLocaleString()}đ</span>
+                          <span className="ml-1 capitalize">
+                            {" "}
+                            {finalTotal.toLocaleString()}đ
+                          </span>
 
                           <span className="ml-1 capitalize mr-2">
                             {"(COD)"}
@@ -816,7 +948,47 @@ checked:bg-[#7b0013] checked:ring-2 checked:ring-white flex-shrink-0 inline-bloc
                     </h2>
                   </div>
                   <div className="">
-                    <div>
+                    {addressesData?.length &&
+                      addressesData.map((item) => (
+                        <div className="mt-[1.25rem] text-[clamp(14px,1rem,1rem)]">
+                          <label
+                            htmlFor=""
+                            className="block relative pl-[2rem]"
+                          >
+                            <input
+                              type="radio"
+                              name=""
+                              id=""
+                              value={address}
+                              checked={address === item.id}
+                              onChange={() => handleSelect(item.id)}
+                              className={`absolute top-1 left-0 text-[clamp(14px,1rem,1rem)] 
+                                border-black bg-current bg-no-repeat bg-[length:100%_100%] bg-center 
+                                rounded-full inline-block shrink-0 align-middle appearance-none border 
+                                p-0 w-4 h-4 select-none m-0 font-inherit leading-inherit 
+                                ${
+                                  address === item.id
+                                    ? `text-[rgb(134,3,21)] `
+                                    : `text-white`
+                                } 
+        `}
+                            />
+                            <strong className=" mb-[.5rem] font-bold">
+                              {item.fullName}
+                            </strong>
+                            <br />
+                            <span>{item.streetAddress}</span>
+                            <br />
+                            <span>{item.province}</span>
+                            <br />
+                            <span>{item.phone}</span>
+                            <br />
+                            <span>{item.email}</span>
+                          </label>
+                        </div>
+                      ))}
+
+                    {/* <div className="mt-[1.25rem] text-[clamp(14px,1rem,1rem)]">
                       <label htmlFor="" className="block relative pl-[2rem]">
                         <input
                           type="radio"
@@ -836,35 +1008,25 @@ checked:bg-[#7b0013] checked:ring-2 checked:ring-white flex-shrink-0 inline-bloc
                         <br />
                         <span>hathucminh456@gmail.com</span>
                       </label>
-                    </div>
+                    </div> */}
                     <div className="mt-[1.25rem] text-[clamp(14px,1rem,1rem)]">
                       <label htmlFor="" className="block relative pl-[2rem]">
                         <input
                           type="radio"
                           name=""
                           id=""
-                          className="absolute top-[0.25rem] left-0 text-[clamp(14px,1rem,1rem)] border-transparent bg-current bg-no-repeat bg-[length:100%_100%] bg-center text-[rgb(134,3,21)] rounded-full inline-block shrink-0 align-middle appearance-none border  p-0 w-4 h-4 select-none m-0  font-inherit leading-inherit "
-                        />
-                        <strong className=" mb-[.5rem] font-bold">
-                          Ha Thuc Minh
-                        </strong>
-                        <br />
-                        <span>213/98 tổ 12 Khu Phố 3 Phường Tân Thới Hiệp</span>
-                        <br />
-                        <span>Hồ Chí Minh</span>
-                        <br />
-                        <span>0918016281</span>
-                        <br />
-                        <span>hathucminh456@gmail.com</span>
-                      </label>
-                    </div>
-                    <div className="mt-[1.25rem] text-[clamp(14px,1rem,1rem)]">
-                      <label htmlFor="" className="block relative pl-[2rem]">
-                        <input
-                          type="radio"
-                          name=""
-                          id=""
-                          className="absolute top-[0.25rem] left-0 text-[clamp(14px,1rem,1rem)] border-transparent bg-current bg-no-repeat bg-[length:100%_100%] bg-center text-[rgb(134,3,21)] rounded-full inline-block shrink-0 align-middle appearance-none border  p-0 w-4 h-4 select-none m-0  font-inherit leading-inherit "
+                          value={"open"}
+                          onChange={() => handleSelect("open")}
+                          checked={address === "open"}
+                          className={`absolute top-1 left-0 text-[clamp(14px,1rem,1rem)] 
+                            border-black bg-current bg-no-repeat bg-[length:100%_100%] bg-center 
+                            rounded-full inline-block shrink-0 align-middle appearance-none border 
+                            p-0 w-4 h-4 select-none m-0 font-inherit leading-inherit 
+                            ${
+                              address === "open"
+                                ? `text-[rgb(134,3,21)] `
+                                : `text-white`
+                            } `}
                         />
                         {"Them dia chi moi"}
                       </label>
@@ -881,7 +1043,158 @@ checked:bg-[#7b0013] checked:ring-2 checked:ring-white flex-shrink-0 inline-bloc
                           Thông tin người mua hàng giống như trên
                         </label>
                       </div>
-                      <div className="mt-[.75rem] border-t-[1px] border-t-[#44444426] pt-[1.25rem] text-[clamp(14px,1rem,1rem)]">
+                      {open && (
+                        <div className="mt-[.75rem] border-t-[1px] border-t-[#44444426] pt-[1.25rem] text-[clamp(14px,1rem,1rem)]">
+                          <div className="mt-[1.25rem] text-[clamp(14px,1rem,1rem)]">
+                            <label
+                              htmlFor=""
+                              className="block relative pl-[2rem]"
+                            >
+                              <input
+                                type="radio"
+                                name=""
+                                id=""
+                                className="absolute top-[0.25rem] left-0 text-[clamp(14px,1rem,1rem)] border-transparent bg-current bg-no-repeat bg-[length:100%_100%] bg-center text-[rgb(134,3,21)] rounded-full inline-block shrink-0 align-middle appearance-none border  p-0 w-4 h-4 select-none m-0  font-inherit leading-inherit "
+                              />
+                              {"Them dia chi moi"}
+                            </label>
+                          </div>
+                          <div className="mt-[.75rem]">
+                            <div className="flex mb-[1.25rem] ">
+                              <label
+                                htmlFor=""
+                                className="p-[8px_10px_8px_0] w-[130px] block  text-[rgb(68,68,68)] font-normal text-[clamp(14px,1rem,1rem)] leading-[1.5]"
+                              >
+                                {"Họ và tên ("}
+                                <span className="text-[rgb(245,45,5)]">*</span>
+                                {")"}
+                              </label>
+                              <div className="w-full max-w-[calc(100%-130px)] xl:text-[clamp(14px,1rem,1rem)]">
+                                <input
+                                  type="text"
+                                  value={formData.fullName}
+                                  onChange={handleChange}
+                                  name="fullName"
+                                  className="h-[2.75rem] text-[clamp(14px,1rem,1rem)] relative border border-solid border-[rgb(68,68,68)] rounded-md bg-inherit p-[0.25rem_2.5rem_0.25rem_1rem] w-full  font-normal appearance-none text-base leading-[1.5rem] m-0  text-inherit font-inherit  leading-inherit"
+                                  placeholder="Nhập họ và tên"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex mb-[1.25rem] ">
+                              <label
+                                htmlFor=""
+                                className="p-[8px_10px_8px_0] w-[130px] block  text-[rgb(68,68,68)] font-normal text-[clamp(14px,1rem,1rem)] leading-[1.5]"
+                              >
+                                {"Điện thoại ("}
+                                <span className="text-[rgb(245,45,5)]">*</span>
+                                {")"}
+                              </label>
+                              <div className="w-full max-w-[calc(100%-130px)] xl:text-[clamp(14px,1rem,1rem)]">
+                                <input
+                                  type="text"
+                                  value={formData.phone}
+                                  onChange={handleChange}
+                                  name="phone"
+                                  className="h-[2.75rem] text-[clamp(14px,1rem,1rem)] relative border border-solid border-[rgb(68,68,68)] rounded-md bg-inherit p-[0.25rem_2.5rem_0.25rem_1rem] w-full  font-normal appearance-none text-base leading-[1.5rem] m-0  text-inherit font-inherit  leading-inherit"
+                                  placeholder="Nhập số điện thoại"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex mb-[1.25rem] ">
+                              <label
+                                htmlFor=""
+                                className="p-[8px_10px_8px_0] w-[130px] block  text-[rgb(68,68,68)] font-normal text-[clamp(14px,1rem,1rem)] leading-[1.5]"
+                              >
+                                {"Tỉnh/Thành Phố ("}
+                                <span className="text-[rgb(245,45,5)]">*</span>
+                                {")"}
+                              </label>
+                              <div className="w-full max-w-[calc(100%-130px)] xl:text-[clamp(14px,1rem,1rem)]">
+                                <select
+                                  value={formData.province}
+                                  onChange={handleChange}
+                                  name="province"
+                                  className="h-[2.75rem] text-[clamp(14px,1rem,1rem)] relative border border-solid border-[rgb(68,68,68)] rounded-md bg-inherit p-[0.25rem_2.5rem_0.25rem_1rem] w-full  font-normal appearance-none text-base leading-[1.5rem] m-0  text-inherit font-inherit  leading-inherit"
+                                >
+                                  <option value="">Chọn tỉnh/thành phố</option>
+                                  <option value="Hồ Chí Minh">
+                                    Hồ Chí Minh
+                                  </option>
+                                  <option value="Hà Nội">Hà Nội</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="flex mb-[1.25rem] ">
+                              <label
+                                htmlFor=""
+                                className="p-[8px_10px_8px_0] w-[130px] block  text-[rgb(68,68,68)] font-normal text-[clamp(14px,1rem,1rem)] leading-[1.5]"
+                              >
+                                {"Quận/Huyện ("}
+                                <span className="text-[rgb(245,45,5)]">*</span>
+                                {")"}
+                              </label>
+                              <div className="w-full max-w-[calc(100%-130px)] xl:text-[clamp(14px,1rem,1rem)]">
+                                <select
+                                  value={formData.district}
+                                  onChange={handleChange}
+                                  name="district"
+                                  className="h-[2.75rem] text-[clamp(14px,1rem,1rem)] relative border border-solid border-[rgb(68,68,68)] rounded-md bg-inherit p-[0.25rem_2.5rem_0.25rem_1rem] w-full  font-normal appearance-none text-base leading-[1.5rem] m-0  text-inherit font-inherit  leading-inherit"
+                                >
+                                  <option value="">Chọn Quận/Huyện</option>
+                                  <option value="Hồ Chí Minh">Quận 12</option>
+                                  <option value="Hà Nội">Quận Gò Vấp</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="flex mb-[1.25rem] ">
+                              <label
+                                htmlFor=""
+                                className="p-[8px_10px_8px_0] w-[130px] block  text-[rgb(68,68,68)] font-normal text-[clamp(14px,1rem,1rem)] leading-[1.5]"
+                              >
+                                {"Địa chỉ ("}
+                                <span className="text-[rgb(245,45,5)]">*</span>
+                                {")"}
+                              </label>
+                              <div className="w-full max-w-[calc(100%-130px)] xl:text-[clamp(14px,1rem,1rem)]">
+                                <input
+                                  value={formData.streetAddress}
+                                  onChange={handleChange}
+                                  type="text"
+                                  name="streetAddress"
+                                  className="h-[2.75rem] text-[clamp(14px,1rem,1rem)] relative border border-solid border-[rgb(68,68,68)] rounded-md bg-inherit p-[0.25rem_2.5rem_0.25rem_1rem] w-full  font-normal appearance-none text-base leading-[1.5rem] m-0  text-inherit font-inherit  leading-inherit"
+                                  placeholder="VD: Đường số 1, Phường 1, Quận 1"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex mb-[1.25rem] ">
+                              <label
+                                htmlFor=""
+                                className="p-[8px_10px_8px_0] w-[130px] block  text-[rgb(68,68,68)] font-normal text-[clamp(14px,1rem,1rem)] leading-[1.5]"
+                              >
+                                {"Email ("}
+                                <span className="text-[rgb(245,45,5)]">*</span>
+                                {")"}
+                              </label>
+                              <div className="w-full max-w-[calc(100%-130px)] xl:text-[clamp(14px,1rem,1rem)]">
+                                <input
+                                  value={formData.email}
+                                  onChange={handleChange}
+                                  name="email"
+                                  type="text"
+                                  className="h-[2.75rem] text-[clamp(14px,1rem,1rem)] relative border border-solid border-[rgb(68,68,68)] rounded-md bg-inherit p-[0.25rem_2.5rem_0.25rem_1rem] w-full  font-normal appearance-none text-base leading-[1.5rem] m-0  text-inherit font-inherit  leading-inherit"
+                                  placeholder="VD: hathucminh456@gmail"
+                                />
+                                <div className="text-[clamp(14px,.75rem,.75rem)] text-[rgb(68,68,68)] italic font-normal ">
+                                  {
+                                    "(Để nhận thông tin về hóa đơn điện tử cũng như theo dõi về lịch trình giao hàng.)"
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {/* <div className="mt-[.75rem] border-t-[1px] border-t-[#44444426] pt-[1.25rem] text-[clamp(14px,1rem,1rem)]">
                         <div className="mt-[1.25rem] text-[clamp(14px,1rem,1rem)]">
                           <label
                             htmlFor=""
@@ -993,7 +1306,6 @@ checked:bg-[#7b0013] checked:ring-2 checked:ring-white flex-shrink-0 inline-bloc
                             <div className="w-full max-w-[calc(100%-130px)] xl:text-[clamp(14px,1rem,1rem)]">
                               <input
                                 value={formData.streetAddress}
-                              
                                 onChange={handleChange}
                                 type="text"
                                 name="streetAddress"
@@ -1028,7 +1340,7 @@ checked:bg-[#7b0013] checked:ring-2 checked:ring-white flex-shrink-0 inline-bloc
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>
