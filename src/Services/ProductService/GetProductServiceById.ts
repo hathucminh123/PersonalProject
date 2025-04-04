@@ -41,7 +41,7 @@ interface SubCategory {
 
 interface signal {
   signal: AbortSignal;
-  id: string |undefined;
+  id: string |undefined |null;
 }
 
 export const GetProductByIdService = async ({

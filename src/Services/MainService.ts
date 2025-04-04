@@ -55,5 +55,11 @@ export const apiLinks = {
     PostPayment: `${baseUrl}/Payment/vnpay/create`,
     
 
+  },
+  FavoriteProducts:{
+    Post :`${baseUrl}/FavoriteProducts`,
+    Get :`${baseUrl}/FavoriteProducts`,
+    Delete :`${baseUrl}/FavoriteProducts`,
   }
+
 };

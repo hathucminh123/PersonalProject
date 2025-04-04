@@ -3,14 +3,21 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/swiper-bundle.css";
 
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
-import { NavLink } from "react-router-dom";
+import { NavLink, useOutletContext } from "react-router-dom";
 // import SkinCard from "../components/SkinCard";
 import SkinCardSlider from "../components/SkinCardSlider";
 import SkinCardButton from "../components/SkinCardButton";
 import { useQuery } from "@tanstack/react-query";
 import { GetProductsService } from "../Services/ProductService/GetProductService";
+import { GetFavoriteProducts } from "../Services/FavoriteProductsService/GetFavoriteProducts";
+
+type OutletContextType = {
+  setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setProductId: React.Dispatch<React.SetStateAction<string | null>>;
+};
 
 const HomePage: React.FC = () => {
+  const useId = localStorage.getItem("userId");
   const prevRef = useRef<HTMLButtonElement>(null);
   const nextRef = useRef<HTMLButtonElement>(null);
 
@@ -19,19 +26,27 @@ const HomePage: React.FC = () => {
     console.log("nextRef:", nextRef.current);
   }, []);
 
-
   const { data: Products } = useQuery({
     queryKey: ["Products"],
     queryFn: ({ signal }) => GetProductsService({ signal: signal }),
   });
 
   const productsdata = Products?.Products;
-  console.log("fetch duoc",productsdata);
+  console.log("fetch duoc", productsdata);
+
+  const { setOpenModal, setProductId } = useOutletContext<OutletContextType>();
+
+
+    const { data: favoriteProducts } = useQuery({
+      queryKey: ["FavoriteProducts", useId],
+      queryFn: ({ signal }) => GetFavoriteProducts({ userId: useId, signal }),
+      enabled: !!useId,
+    });
+    const favoriteProductsdata = favoriteProducts?.Products || [];
 
   if (productsdata === undefined) {
     return <div>Loading...</div>;
   }
-
 
   return (
     <>
@@ -179,11 +194,14 @@ const HomePage: React.FC = () => {
                       </div>
                     </div> */}
 
-                    <SkinCardSlider productsdata={productsdata} prevRef={prevRef} nextRef={nextRef} />
+                    <SkinCardSlider
+                      productsdata={productsdata}
+                      prevRef={prevRef}
+                      nextRef={nextRef}
+                    />
                   </div>
                 </div>
                 <div className="block">
-                
                   <button
                     type="button"
                     ref={prevRef}
@@ -214,14 +232,23 @@ const HomePage: React.FC = () => {
             <div className="block">
               <div>
                 <div className="lg:-ml-[15px] md:-ml-[12px] !mr-0 lg:-mx-[.78125rem] flex flex-wrap -mt-[1.875rem]">
-                  {productsdata.map((product) => (
+                  {productsdata.map((product) => {
+                    const isFavorite = favoriteProductsdata.some(
+                      (favoriteProduct) => favoriteProduct.id === product.id
+                    );
+                    return(
                     <div
                       className="lg:pl-[15px] md:pl-[12px] pr-0 pl-[10px] lg:px-[.78125rem] px-[10px] mt-[1.875rem] md:w-1/5 lg:w-1/5 xl:w-1/5 lg:text-[clamp(14px,1rem,1rem)]"
                       key={product.id}
                     >
-                      <SkinCardButton product={product} />
+                      <SkinCardButton
+                        product={product}
+                        isFavorite={isFavorite}
+                        setProductId={setProductId}
+                        setOpenModal={setOpenModal}
+                      />
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             </div>

@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Link,
   useNavigate,
- 
   useOutletContext,
   useParams,
 } from "react-router-dom";
@@ -19,17 +18,24 @@ import { CompareModal } from "../components/CompareModal";
 import { AddProductCompare } from "../Services/CompareService/AddProductCompare";
 import { queryClient } from "../Services/MainService";
 import { createCart } from "../Services/CartService/CreateCartService";
+import { PostFavoriteProducts } from "../Services/FavoriteProductsService/PostFavoriteProducts";
+import { GetFavoriteProducts } from "../Services/FavoriteProductsService/GetFavoriteProducts";
+import { RemoveProductFavorite } from "../Services/FavoriteProductsService/RemoveProductFavorite";
 
 type OutletContextType = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  openmodal: boolean;
+  setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setProductId: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const DetailPage: React.FC = () => {
   const useId = localStorage.getItem("userId");
 
-  const { open, setOpen } = useOutletContext<OutletContextType>();
-  console.log('open',open)
+  const { open, setOpen, setOpenModal, setProductId } =
+    useOutletContext<OutletContextType>();
+  console.log("open", open);
 
   const navigate = useNavigate();
 
@@ -119,19 +125,18 @@ const DetailPage: React.FC = () => {
       navigate("/login");
       return;
     }
-  
+
     if (!id) {
       alert("Không tìm thấy sản phẩm!");
       return;
     }
-  
+
     // Trim và đảm bảo không có ký tự thừa
     const productId = id.trim();
     const userId = useId.trim();
-  
+
     addCart({ data: { productId, userId, quantity } });
   };
-  
 
   const [swiperInstance, setSwiperInstance] = useState<SwiperInstance | null>(
     null
@@ -181,6 +186,56 @@ const DetailPage: React.FC = () => {
       console.warn("Swiper navigation params are not valid!");
     }
   }, [swiperInstance, prevRef, nextRef]);
+
+  const { data: favoriteProducts } = useQuery({
+    queryKey: ["FavoriteProducts", useId],
+    queryFn: ({ signal }) => GetFavoriteProducts({ userId: useId, signal }),
+    enabled: !!useId,
+  });
+  const favoriteProductsdata = favoriteProducts?.Products || [];
+
+  const isProductInFavorites = favoriteProductsdata.some(
+    (product) => product.id === id
+  );
+  console.log("favoriteProductss", isProductInFavorites);
+
+  const { mutate: AddToFavorite } = useMutation({
+    mutationFn: PostFavoriteProducts,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["FavoriteProducts", useId],
+        refetchType: "active",
+      });
+      console.log("datafavorite", data.productId);
+      setProductId(data.productId);
+      setOpenModal(true);
+      alert("Add product to favorite success");
+    },
+  });
+
+  const { mutate: Remove } = useMutation({
+    mutationFn: RemoveProductFavorite,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["FavoriteProducts", useId],
+        refetchType: "active",
+      });
+      console.log("datafavorite", data);
+      // setOpenModal(true);
+      alert("Remove product to favorite success");
+    },
+  });
+
+  const handleAddtoFavorite = () => {
+    AddToFavorite({ userId: useId, productId: id });
+  };
+
+  const handleRemoveFromFavorite = () => {
+    // Logic to remove from favorite products
+    Remove({ userId: useId, productId: id });
+    console.log("Remove from favorites");
+  };
+
   return (
     <>
       {showModal && <CompareModal userId={useId} onClose={handleClose} />}
@@ -527,7 +582,50 @@ const DetailPage: React.FC = () => {
                         </svg>
                         <span>Thêm vào giỏ hàng</span>
                       </button>
-                      <Link
+                      {isProductInFavorites ? (
+                        <button
+                          onClick={handleRemoveFromFavorite}
+                          type="button"
+                          className="cursor-pointer  flex items-center gap-2.5 transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] px-4 py-2 h-9 font-medium text-sm border text-opacity-100  hover:text-[rgb(134_3_21)] hover:bg-white rounded-full border-[rgb(134_3_21)] bg-[rgb(134_3_21)] text-white"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke="currentColor"
+                            className="w-6 h-6 transition-all duration-300 hover:stroke-white"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M12 21C12 21 4 13.5 4 8.5C4 5.42 6.42 3 9.5 3C11.24 3 12 4 12 4C12 4 12.76 3 14.5 3C17.58 3 20 5.42 20 8.5C20 13.5 12 21 12 21Z"
+                            />
+                          </svg>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleAddtoFavorite}
+                          type="button"
+                          className="cursor-pointer flex items-center gap-2.5 transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] px-4 py-2 h-9 font-medium text-sm border text-opacity-100 bg-transparent text-[rgb(134_3_21)] rounded-full border-[rgb(134_3_21)] hover:bg-[rgb(134_3_21)] hover:text-white"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke="currentColor"
+                            className="w-6 h-6 transition-all duration-300 hover:stroke-white"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M12 21C12 21 4 13.5 4 8.5C4 5.42 6.42 3 9.5 3C11.24 3 12 4 12 4C12 4 12.76 3 14.5 3C17.58 3 20 5.42 20 8.5C20 13.5 12 21 12 21Z"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                      {/* <Link
                         to="#"
                         className="flex items-center gap-2.5 transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] px-4 py-2 h-9 font-medium text-sm border text-opacity-100 bg-transparent text-[rgb(134_3_21)] rounded-full border-[rgb(134_3_21)] hover:bg-[rgb(134_3_21)] hover:text-white"
                       >
@@ -545,7 +643,7 @@ const DetailPage: React.FC = () => {
                             d="M12 21C12 21 4 13.5 4 8.5C4 5.42 6.42 3 9.5 3C11.24 3 12 4 12 4C12 4 12.76 3 14.5 3C17.58 3 20 5.42 20 8.5C20 13.5 12 21 12 21Z"
                           />
                         </svg>
-                      </Link>
+                      </Link> */}
                       <Link
                         to="#"
                         onClick={hanleAddProduct}
