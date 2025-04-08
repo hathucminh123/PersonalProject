@@ -7,15 +7,17 @@ import CloseIcon from "@mui/icons-material/Close";
 const MenuItem = ({
   label,
   children,
+  to,
 }: {
   // open: boolean;
   // setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   label: string;
   children?: React.ReactNode;
+  to?: string;
 }) => (
   <li className=" group h-full">
     <a
-      href="#"
+      href={to}
       className="hover:text-[#D95D59] transition-colors duration-300 py-4 block"
     >
       {label}
@@ -199,9 +201,9 @@ const HeaderComponent: React.FC<props> = ({ open, setOpen, data }) => {
               </div>
             </div>
           </MenuItem>
-          {["Blog làm đẹp", "Từ điển về da", "Testimonial", "Deal Hời"].map(
+          {[ {id:1 ,title: "Blog làm đẹp" ,to:"/blog"}].map(
             (item) => (
-              <MenuItem key={item} label={item} />
+              <MenuItem  key={item.id} label={item.title} to={item.to} />
             )
           )}
         </ul>

@@ -24,6 +24,10 @@ import { CreateAddress } from "./components/CreateAddress";
 import { UserOrders } from "./components/UserOrders";
 import { FavoriteProducts } from "./components/FavoriteProducts";
 import { ChangePassword } from "./components/ChangePassword";
+import { Blog } from "./pages/Blog";
+import { AllBlog } from "./components/AllBlog";
+import { SkinCare } from "./components/SkinCare";
+import { BlogDetail } from "./pages/BlogDetail";
 
 const App: React.FC = () => {
   const router = createBrowserRouter([
@@ -93,6 +97,25 @@ const App: React.FC = () => {
             }
           ],
         },
+        {
+
+          path:"/blog",
+          element:<Blog/>,
+          children:[
+            {
+              index:true,
+              element:<AllBlog/>
+            },
+            {
+              path:"skincare",
+              element:<SkinCare/>
+            }
+          ]
+        },
+        {
+          path:"/blogdetail",
+          element:<BlogDetail/>
+        }
       ],
     },
   ]);
