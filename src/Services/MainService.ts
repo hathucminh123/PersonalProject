@@ -53,13 +53,33 @@ export const apiLinks = {
   },
   Payment: {
     PostPayment: `${baseUrl}/Payment/vnpay/create`,
-    
-
   },
-  FavoriteProducts:{
-    Post :`${baseUrl}/FavoriteProducts`,
-    Get :`${baseUrl}/FavoriteProducts`,
-    Delete :`${baseUrl}/FavoriteProducts`,
-  }
+  FavoriteProducts: {
+    Post: `${baseUrl}/FavoriteProducts`,
+    Get: `${baseUrl}/FavoriteProducts`,
+    Delete: `${baseUrl}/FavoriteProducts`,
+  },
+  BlogCategories: {
+    Post: `${baseUrl}/BlogCategories`,
+    Get: `${baseUrl}/BlogCategories`,
+    GetById: `${baseUrl}/BlogCategories`,
+    Put: `${baseUrl}/BlogCategories`,
+    Delete: `${baseUrl}/BlogCategories`,
+  },
+  BlogSubCategories: {
+    Post: `${baseUrl}/BlogSubCategories`,
+    Get:`${baseUrl}/BlogSubCategories`,
+    GetbyId:`${baseUrl}/BlogSubCategories`,
+    Put:`${baseUrl}/BlogSubCategories`,
+    Delete:`${baseUrl}/BlogSubCategories`,
+    GetByName:`${baseUrl}/BlogSubCategories/by-name`,
+  },
 
+  BlogPost:{
+    Post:`${baseUrl}/BlogPosts`,
+    Get:`${baseUrl}/BlogPosts`,
+    GetById:`${baseUrl}/BlogPosts`,
+    Put:`${baseUrl}/BlogPosts`,
+    delete:`${baseUrl}/BlogPosts`
+  }
 };

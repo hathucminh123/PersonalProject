@@ -1,7 +1,31 @@
+import { useQuery } from "@tanstack/react-query";
 import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useParams } from "react-router-dom";
+import { GetBlogPostbyId } from "../Services/BlogPost/GetBlogPostbyId";
+import moment from "moment";
+import { GetBlogPost } from "../Services/BlogPost/GetBlogPost";
 
 export const BlogDetail: React.FC = () => {
+  const params = useParams();
+
+  console.log("quao", params.id);
+
+  const idBlog = Number(params.id);
+
+  const { data } = useQuery({
+    queryKey: ["BlogPosts-Detail", idBlog],
+    queryFn: ({ signal }) => GetBlogPostbyId({ id: idBlog, signal: signal }),
+    enabled: !!idBlog,
+  });
+
+  const BlogDetail = data?.BlogPost;
+
+  const { data: Blogs } = useQuery({
+    queryKey: ["BlogPosts"],
+    queryFn: ({ signal }) => GetBlogPost({ signal: signal }),
+  });
+
+  const blogsdata = Blogs?.BlogPosts;
   return (
     <main>
       <nav className="pt-[8px] pb-[8px]">
@@ -23,12 +47,15 @@ export const BlogDetail: React.FC = () => {
           <div className="flex mr-[-.78125rem] ml-[-.78125rem] flex-wrap mt-[-3.125rem]">
             <div className="w-[75%] pr-[.78125rem] pl-[.78125rem] mt-[3.125rem]">
               <h1 className="mb-[1rem] text-[clamp(14px,1.875rem,1.875rem)] text-[rgb(134,3,21)] font-bold leading-[1.3] m-0">
-                Livestream HappySkin Tất cả sản phẩm, sale cực sốc
+                {BlogDetail?.title}
               </h1>
               <div className="flex items-center justify-start">
                 <div className="flex items-center gap-[.5rem]">
                   <p className="text-[clamp(14px,1rem,1rem)] text-[#4449] font-normal leading-[1.6] m-0">
-                    19/02/2025 10:14:07 CH
+                    {moment(BlogDetail?.createdAt).format("DD-MM-YYYY")}
+                    {/* {new Date(BlogDetail?.createdAt).toLocaleDateString(
+                                "vi-VN"
+                              )} */}
                   </p>
                   <span className="rounded-full bg-[rgb(217,217,217)] w-[6px] h-[6px]"></span>
                   <p className="text-[clamp(14px,1rem,1rem)] text-[#4449] font-normal leading-[1.6] m-0">
@@ -60,8 +87,9 @@ export const BlogDetail: React.FC = () => {
               <div className="mt-[1.5rem] pt-[2.5rem] border-t-[1px] border-top-[#44444426]">
                 <div>
                   <img
-                    src="https://cdn.happyskin.vn/media/54/livestream-happyskin-tat-ca-san-pham-sale-cuc-soc.png"
-                    alt=""
+                    src={BlogDetail?.imageUrl}
+                    // src="https://cdn.happyskin.vn/media/54/livestream-happyskin-tat-ca-san-pham-sale-cuc-soc.png"
+                    alt={BlogDetail?.title}
                     className="w-full h-full object-contain inline max-w-full align-middle"
                   />
                 </div>
@@ -75,21 +103,25 @@ export const BlogDetail: React.FC = () => {
                       />
                     </Link>
                   </p>
-                  <p className="mt-[1.25em] mb-[1.25em]">dasdasdasd</p>
+                  <p className="mt-[1.25em] mb-[1.25em]">
+                    {BlogDetail?.content}
+                  </p>
                 </div>
                 <div className="mt-[2.5rem] text-[rgb(134,3,21)] font-normal text-[14px] rounded-[.9375rem] p-[1.5rem] border border-dashed border-[rgb(134,3,21)] bg-[rgb(255,255,255)]">
                   <p className="mb-[1rem] text-[clamp(14px,1.5rem,1.5rem)] text-[rgb(134,3,21)] font-bold m-0">
                     Xem thêm các bài tin tức liên quan
                   </p>
                   <ul className="pl-5 list-disc m-0 p-0 ">
-                    <li className="marker:text-[#d9d9d9] marker:text-normal marker:indent-0 marker:text-start">
-                      <Link
-                        to=""
-                        className="relative duration-2000 ease-[cubic-bezier(0.4,_0,_0.2,_1)] text-inherit decoration-inherit"
-                      >
-                        HappySkin sinh nhật tặng deal hot
-                      </Link>
-                    </li>
+                    {blogsdata?.slice(0, 3).map((blog) => (
+                      <li className="marker:text-[#d9d9d9] marker:text-normal marker:indent-0 marker:text-start">
+                        <Link
+                          to=""
+                          className="relative duration-2000 ease-[cubic-bezier(0.4,_0,_0.2,_1)] text-inherit decoration-inherit"
+                        >
+                          {blog.title}
+                        </Link>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
@@ -100,15 +132,47 @@ export const BlogDetail: React.FC = () => {
                   <h3 className="mb-[1.5rem] text-[clamp(14px,1.625rem,1.625rem)] leading-[1.3] font-normal text-[rgb(134,3,21)]">
                     Bài viết mới nhất
                   </h3>
-                  <div>
+                  {blogsdata?.slice(0, 3).map((blog) => (
+                    <div>
+                      <div className="flex items-center gap-[10px] mt-[.5rem] pt-[.5rem] border-t-[1px] border-t-[#44444426] ">
+                        <div className="rounded-[8px] w-[71px] h-[67px]">
+                          <Link
+                            to={`/blogdetail/${blog.id}`}
+                            className="pt-[94.3662%] block relative h-0 overflow-hidden"
+                          >
+                            <img
+                              src={blog.imageUrl}
+                              // src="https://cdn.happyskin.vn/media/54/happyskin-sinh-nhat-tang-deal-hot.png"
+                              // alt=""
+                              alt={blog.title}
+                              className="absolute top-0 left-0 transition-all duration-300 ease-[cubic-bezier(0.4,_0,_0.2,_1)] w-full h-full object-cover inline max-w-full align-middle"
+                            />
+                          </Link>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="news-related-item title overflow-hidden font-normal text-[clamp(14px,.875rem,.875rem)] leading-6 text-[rgb(68,68,68)] hover:text-[rgb(134,3,21)]">
+                            <Link     to={`/blogdetail/${blog.id}`}>{blog.title}</Link>
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {/* <div>
                     <div className="flex items-center gap-[10px] ">
                       <div className="rounded-[8px] w-[71px] h-[67px]">
-                        <Link to="" className="pt-[94.3662%] block relative h-0 overflow-hidden">
-                        <img src="https://cdn.happyskin.vn/media/54/happyskin-sinh-nhat-tang-deal-hot.png" alt="" className="absolute top-0 left-0 transition-all duration-300 ease-[cubic-bezier(0.4,_0,_0.2,_1)] w-full h-full object-cover inline max-w-full align-middle" />
+                        <Link
+                          to=""
+                          className="pt-[94.3662%] block relative h-0 overflow-hidden"
+                        >
+                          <img
+                            src="https://cdn.happyskin.vn/media/54/happyskin-sinh-nhat-tang-deal-hot.png"
+                            alt=""
+                            className="absolute top-0 left-0 transition-all duration-300 ease-[cubic-bezier(0.4,_0,_0.2,_1)] w-full h-full object-cover inline max-w-full align-middle"
+                          />
                         </Link>
                       </div>
                       <div className="flex-1">
-                        <h3 className="news-related-item title overflow-hidden font-normal text-[clamp(14px,.875rem,.875rem)] leading-6 text-[rgb(68,68,68)]" >
+                        <h3 className="news-related-item title overflow-hidden font-normal text-[clamp(14px,.875rem,.875rem)] leading-6 text-[rgb(68,68,68)]">
                           <Link to="">HappySkin sinh nhật tặng deal hot</Link>
                         </h3>
                       </div>
@@ -117,17 +181,24 @@ export const BlogDetail: React.FC = () => {
                   <div>
                     <div className="flex items-center gap-[10px] mt-[.5rem] pt-[.5rem] border-t-[1px] border-t-[#44444426] ">
                       <div className="rounded-[8px] w-[71px] h-[67px]">
-                        <Link to="" className="pt-[94.3662%] block relative h-0 overflow-hidden">
-                        <img src="https://cdn.happyskin.vn/media/54/happyskin-sinh-nhat-tang-deal-hot.png" alt="" className="absolute top-0 left-0 transition-all duration-300 ease-[cubic-bezier(0.4,_0,_0.2,_1)] w-full h-full object-cover inline max-w-full align-middle" />
+                        <Link
+                          to=""
+                          className="pt-[94.3662%] block relative h-0 overflow-hidden"
+                        >
+                          <img
+                            src="https://cdn.happyskin.vn/media/54/happyskin-sinh-nhat-tang-deal-hot.png"
+                            alt=""
+                            className="absolute top-0 left-0 transition-all duration-300 ease-[cubic-bezier(0.4,_0,_0.2,_1)] w-full h-full object-cover inline max-w-full align-middle"
+                          />
                         </Link>
                       </div>
                       <div className="flex-1">
-                        <h3 className="news-related-item title overflow-hidden font-normal text-[clamp(14px,.875rem,.875rem)] leading-6 text-[rgb(68,68,68)]" >
+                        <h3 className="news-related-item title overflow-hidden font-normal text-[clamp(14px,.875rem,.875rem)] leading-6 text-[rgb(68,68,68)]">
                           <Link to="">HappySkin sinh nhật tặng deal hot</Link>
                         </h3>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

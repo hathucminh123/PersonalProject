@@ -107,13 +107,13 @@ const App: React.FC = () => {
               element:<AllBlog/>
             },
             {
-              path:"skincare",
+              path:"cach-cham-da/:id",
               element:<SkinCare/>
             }
           ]
         },
         {
-          path:"/blogdetail",
+          path:"/blogdetail/:id",
           element:<BlogDetail/>
         }
       ],
